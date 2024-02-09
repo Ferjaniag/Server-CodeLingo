@@ -1,12 +1,25 @@
-const express = require('express');
-const dotenv = require('dotenv')
+const express = require("express");
 const app = express();
 
-app.get('/', (req, res) => {
-  res.send('Hello, world!');
+require("dotenv").config()
+require("./config/mongoose")
+
+
+
+app.use(express.json());
+
+// routes
+const course_routes = require("./Routes/CourseRoutes");
+
+app.get("/", (req, res) => {
+  res.send("Hello, world!");
 });
 
-dotenv.config()
+
+
 app.listen(process.env.PORT, () => {
-  console.log('App is listening on port',process.env.PORT);
+  console.log("App is listening on port", process.env.PORT);
 });
+
+//app use
+app.use("/", course_routes);
