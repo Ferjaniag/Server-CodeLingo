@@ -13,10 +13,10 @@ const courseSchema=new mongoose.Schema({
         type: String,
         required: true
       },
-      unit:{
+      unit:[{
         type:mongoose.Schema.Types.ObjectId,
         ref:'Unit',
-    }
+    }]
 
 
 })
