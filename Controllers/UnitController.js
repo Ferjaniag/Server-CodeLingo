@@ -89,6 +89,7 @@ const addUnit = async (req, res) => {
       const unitsWithCourseNames = units.map(unit => ({
         idUnit:unit._id.toString(),
         unitTitle: unit.title,
+        nbLessons : unit.lessons.length,
         idCourse: unit.idCourse,
         courseTitle: unit.idCourse ? courseIdToTitleMap[unit.idCourse.toString()] : 'N/A'
       }));
