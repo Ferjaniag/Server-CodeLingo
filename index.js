@@ -3,8 +3,6 @@ const app = express();
 const bodyParser = require("body-parser");
 
 
-
-
 require("dotenv").config()
 require("./config/mongoose")
 
