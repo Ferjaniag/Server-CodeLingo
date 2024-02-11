@@ -25,3 +25,18 @@ exports.get_all_courses = async (req, res) =>{
         res.status(500).send({err:err.message});
     }
 }
+
+
+exports.delete_course = async (req, res) => {
+    try {
+        const result = await Course.findByIdAndDelete({_id: req.params.courseID});
+        
+        if (result) {
+            res.status(200).json(result);
+        } else {
+            res.status(404).json({ message: "Course not found" });
+        }
+    } catch (err) {
+        res.status(400).json(err);
+    }
+}
