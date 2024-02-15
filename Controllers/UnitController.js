@@ -103,8 +103,17 @@ const addUnit = async (req, res) => {
   }
   
 
-
-
+  const getUnitsWithIdCourse = async (req,res)=> {
+    try {
+      const courseId = req.params.courseId;
+      // Query the database to find units by course ID
+      const units = await Unit.find({ idCourse: courseId }) ;
+      res.status(200).json(units); // Send units as JSON response
+    } catch (error) {
+      console.error('Error fetching units by course ID:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
 
 
 
@@ -116,5 +125,6 @@ const addUnit = async (req, res) => {
     updateUnit,
     addLessonToUnit,
     addQuizToUnit,
-    getUnitsWithCourseNames
+    getUnitsWithCourseNames,
+    getUnitsWithIdCourse
   };
