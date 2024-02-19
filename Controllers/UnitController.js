@@ -17,6 +17,25 @@ const addUnit = async (req, res) => {
       res.status(500).json({ error: error.message });
     }
   };
+
+
+  // Get Unit By ID 
+
+const getUnitById = async (req, res) => {
+  
+  try  {
+    const unit=await Unit.findById(req.params.unitId);
+    res.status(200).json(unit) ; 
+
+  } catch(error){
+
+    res.status(500).json({ error: error.message });
+
+  }
+}
+
+
+
   
   // Delete a unit
   const deleteUnit = async (req, res) => {
@@ -126,5 +145,6 @@ const addUnit = async (req, res) => {
     addLessonToUnit,
     addQuizToUnit,
     getUnitsWithCourseNames,
-    getUnitsWithIdCourse
+    getUnitsWithIdCourse,
+    getUnitById
   };
