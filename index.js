@@ -14,6 +14,7 @@ app.use(express.json());
 // routes
 const course_routes = require("./Routes/CourseRoutes");
 const unit_routes = require("./Routes/UnitRoute");
+const lesson_routes = require("./Routes/LessonRoutes");
 
 app.get("/", (req, res) => {
   res.send("Hello, world!");
@@ -26,3 +27,4 @@ app.listen(process.env.PORT, () => {
 //app use
 app.use("/", course_routes);
 app.use("/", unit_routes);
+app.use('/', lesson_routes);
