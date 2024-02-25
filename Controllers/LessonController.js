@@ -1,9 +1,10 @@
 const Lesson = require("../Models/Lesson");
+const Unit = require("../Models/Unit");
 
 exports.add_lesson = async (req, res) => {
   try {
-    const { title, content} = req.body;
-    const data = { title, content};
+    const { title, content, idUnit } = req.body;
+    const data = { title, content, idUnit };
     const new_lesson = await Lesson.create(data);
     res.status(200).send(new_lesson);
   } catch (err) {
@@ -71,3 +72,48 @@ module.exports.get_one_lesson = async (req, res) => {
     res.status(400).json(err);
   }
 };
+
+//! getting lessons with unit title
+
+module.exports.getLessonsWithUnitsNames = async (req, res) => {
+  try {
+    // Fetch all units
+    const units = await Unit.find();
+
+    // Fetch all lessons
+    const lessons = await Lesson.find();
+
+    // Create a map of units IDs to units titles
+    const unitIdToTitleMap = {};
+    units.forEach((unit) => {
+      unitIdToTitleMap[unit._id.toString()] = unit.title;
+    });
+
+    // Map lessons to include units names
+    const lessonsWithUnitsNames = lessons.map((lesson) => ({
+      lessonTitle: lesson.title,
+      idUnit: lesson.idUnit,
+      unitTitle: lesson.idUnit
+        ? unitIdToTitleMap[lesson.idUnit.toString()]
+        : "defaultUnit",
+    }));
+
+    return res.json(lessonsWithUnitsNames);
+  } catch (error) {
+    console.error("Error fetching lessons with units names:", error);
+    res.status(500).json({ error: error.message });
+    throw error;
+  }
+};
+
+//! get lessons with Units ID
+module.exports.getLessonsByIdUnit = async (req,res)=> {
+  try {
+    const unitID = req.params.unitID;
+    const lessons = await Lesson.find({ idUnit: unitID }) ;
+    res.status(200).json(lessons); // Send units as JSON response
+  } catch (error) {
+    console.error('Error fetching lessons by unit ID:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
