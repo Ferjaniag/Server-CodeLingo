@@ -5,8 +5,19 @@ exports.add_lesson = async (req, res) => {
   try {
     const { title, content, idUnit } = req.body;
     const data = { title, content, idUnit };
-    const new_lesson = await Lesson.create(data);
-    res.status(200).send(new_lesson);
+    const newLesson = await Lesson.create(data);
+
+    // Find the unit by id
+    const unit = await Unit.findById(idUnit);
+    if (!unit) {
+      return res.status(404).send({ message: "Unit not found" });
+    }
+
+    // Add the new lesson's id to the unit's lessons array
+    unit.lessons.push(newLesson._id);
+    await unit.save();
+
+    res.status(200).send(newLesson);
   } catch (err) {
     res.status(500).send({ message: err.message });
   }
