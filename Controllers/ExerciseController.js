@@ -7,8 +7,8 @@ const getRecentExercises = async (req,res)=>  {
     try {
       
         const recentExercises = await Exercise.find()
-            .sort({ createdAt: -1 }) // Sorting by creation date in descending order
-            .limit(10); // Limiting to 10 recent exercises
+            .sort({ createdAt: 1 }) // Sorting by creation date in descending order
+            .limit(5); // Limiting to 5 recent exercises
         res.status(200).json(recentExercises);
     } catch (error) {
         console.error("Error fetching recent exercises:", error);
@@ -20,7 +20,11 @@ const getRecentExercises = async (req,res)=>  {
 const createExercise = async (req,res)=> {
     try {
         // Extract exercise details from request body
-        const { idLesson, type, question, options, response } = req.body;
+        const { idLesson,
+             type, 
+             question,
+              options, 
+              response } = req.body;
 
         // Create exercise document
         const exercise = new Exercise({
@@ -45,7 +49,7 @@ const createExercise = async (req,res)=> {
 
 const getExerciseByIdEx = async (req,res)=> {
     try {
-        const exercise = await Exercise.findById(req.params.Id).populate('idLesson'); // Assuming you want to populate the lesson referenced by idLesson
+        const exercise = await Exercise.findById(req.params.id).populate('idLesson'); // Assuming you want to populate the lesson referenced by idLesson
     
         if (!exercise) {
           return res.status(404).json({ message: 'Exercise not found' });
