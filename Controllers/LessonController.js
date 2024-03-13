@@ -86,45 +86,81 @@ module.exports.get_one_lesson = async (req, res) => {
 
 //! getting lessons with unit title
 
+// module.exports.getLessonsWithUnitsNames = async (req, res) => {
+//   try {
+//     // Fetch all units
+//     const units = await Unit.find();
+
+//     // Fetch all lessons
+//     const lessons = await Lesson.find();
+
+//     // Create a map of units IDs to units titles
+//     const unitIdToTitleMap = {};
+//     units.forEach((unit) => {
+//       unitIdToTitleMap[unit._id.toString()] = unit.title;
+//     });
+
+//     // Map lessons to include units names
+//     const lessonsWithUnitsNames = lessons.map((lesson) => ({
+//       lessonTitle: lesson.title,
+//       idUnit: lesson.idUnit,
+//       unitTitle: lesson.idUnit
+//         ? unitIdToTitleMap[lesson.idUnit.toString()]
+//         : "defaultUnit",
+//       courseName: lesson.idUnit.idCourse ? lesson.idUnit.idCourse.title : 'No course',
+//     }));
+
+//     return res.json(lessonsWithUnitsNames);
+//   } catch (error) {
+//     console.error("Error fetching lessons with units names:", error);
+//     res.status(500).json({ error: error.message });
+//     throw error;
+//   }
+// };
+
 module.exports.getLessonsWithUnitsNames = async (req, res) => {
   try {
-    // Fetch all units
-    const units = await Unit.find();
-
-    // Fetch all lessons
-    const lessons = await Lesson.find();
-
-    // Create a map of units IDs to units titles
-    const unitIdToTitleMap = {};
-    units.forEach((unit) => {
-      unitIdToTitleMap[unit._id.toString()] = unit.title;
+    // Fetch all lessons with unit information populated
+    const lessons = await Lesson.find().populate({
+      path: "idUnit",
+      model: "Unit",
+      populate: {
+        path: "idCourse",
+        model: "Course",
+      },
     });
 
-    // Map lessons to include units names
-    const lessonsWithUnitsNames = lessons.map((lesson) => ({
-      lessonTitle: lesson.title,
-      idUnit: lesson.idUnit,
-      unitTitle: lesson.idUnit
-        ? unitIdToTitleMap[lesson.idUnit.toString()]
-        : "defaultUnit",
-    }));
+    // Map lessons to include unit and course names
+    const lessonsWithUnitsAndCourses = lessons.map((lesson) => {
+      const lessonObj = {
+        lessonTitle: lesson.title,
+        unitTitle: lesson.idUnit ? lesson.idUnit.title : "defaultUnit",
+      };
 
-    return res.json(lessonsWithUnitsNames);
+      // Check if the unit's course information is available and populated
+      if (lesson.idUnit && lesson.idUnit.idCourse) {
+        lessonObj.courseName = lesson.idUnit.idCourse.title;
+      } else {
+        lessonObj.courseName = "No course";
+      }
+
+      return lessonObj;
+    });
+
+    return res.json(lessonsWithUnitsAndCourses);
   } catch (error) {
     console.error("Error fetching lessons with units names:", error);
     res.status(500).json({ error: error.message });
-    throw error;
   }
 };
-
 //! get lessons with Units ID
-module.exports.getLessonsByIdUnit = async (req,res)=> {
+module.exports.getLessonsByIdUnit = async (req, res) => {
   try {
     const unitID = req.params.unitID;
-    const lessons = await Lesson.find({ idUnit: unitID }) ;
+    const lessons = await Lesson.find({ idUnit: unitID });
     res.status(200).json(lessons); // Send units as JSON response
   } catch (error) {
-    console.error('Error fetching lessons by unit ID:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("Error fetching lessons by unit ID:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
-}
+};

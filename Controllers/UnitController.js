@@ -124,7 +124,7 @@ const getUnitById = async (req, res) => {
 
   const getUnitsWithIdCourse = async (req,res)=> {
     try {
-      const courseId = req.params.courseId;
+      const courseId = req.params.courseID;
       // Query the database to find units by course ID
       const units = await Unit.find({ idCourse: courseId }) ;
       res.status(200).json(units); // Send units as JSON response
