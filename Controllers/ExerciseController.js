@@ -24,7 +24,7 @@ const createExercise = async (req,res)=> {
              type, 
              question,
               options, 
-              response } = req.body;
+               } = req.body;
 
         // Create exercise document
         const exercise = new Exercise({
@@ -32,7 +32,7 @@ const createExercise = async (req,res)=> {
             type,
             question,
             options,
-            response
+           
         });
 
         // Save exercise to the database
@@ -81,4 +81,15 @@ const getExerciseByIdLesson = async (req,res)=> {
 }
 
 
-module.exports = { createExercise,getRecentExercises,getExerciseByIdEx,getExerciseByIdLesson} ; 
+const deleteExerciseById = async (req,res)=> { 
+
+  try {
+    const deletedExercise = await Exercise.findByIdAndDelete(req.params.id);
+    res.json(deletedExercise);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+
+module.exports = { createExercise,getRecentExercises,getExerciseByIdEx,
+  getExerciseByIdLesson,deleteExerciseById} ; 

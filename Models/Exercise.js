@@ -18,15 +18,9 @@ const exerciseSchema=new mongoose.Schema({
         type:String,
         require:true  
      } , 
-     options : [{
-        type:String,
-        require:false
-     }],
+     options :  [{ text: String, checked: Boolean }]
     
-     response :{
-        type:String,
-        require:false
-     } , 
+   
 
 
  })
