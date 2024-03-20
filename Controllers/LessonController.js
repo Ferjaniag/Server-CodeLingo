@@ -133,6 +133,7 @@ module.exports.getLessonsWithUnitsNames = async (req, res) => {
     // Map lessons to include unit and course names
     const lessonsWithUnitsAndCourses = lessons.map((lesson) => {
       const lessonObj = {
+        lessonID:lesson._id,
         lessonTitle: lesson.title,
         unitTitle: lesson.idUnit ? lesson.idUnit.title : "defaultUnit",
       };
