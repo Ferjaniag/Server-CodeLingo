@@ -47,6 +47,40 @@ const createExercise = async (req,res)=> {
     }
 }
 
+
+
+
+const createProblemSolvEx = async (req,res)=> {
+  try {
+      // Extract exercise details from request body
+      const { idLesson,
+           type, 
+           language,
+           question,
+            solution, 
+             } = req.body;
+
+      // Create exercise document
+      const exercise = new Exercise({
+          idLesson,
+          type,
+         language,
+         solution,
+         
+      });
+
+      // Save exercise to the database
+      const createdExercise = await exercise.save();
+
+      // Send success response with the created exercise
+      res.status(201).json(createdExercise);
+  } catch (error) {
+      // Handle errors
+      console.error("Error creating problem solving exercise:", error);
+      res.status(500).json({ message: "Failed to create problem solving exercise" });
+  }
+}
+
 const getExerciseByIdEx = async (req,res)=> {
     try {
         const exercise = await Exercise.findById(req.params.id).populate('idLesson'); // Assuming you want to populate the lesson referenced by idLesson
@@ -64,7 +98,7 @@ const getExerciseByIdEx = async (req,res)=> {
 
 const getExerciseByIdLesson = async (req,res)=> {
 
-    const lessonId = req.params.lessonId; 
+    const lessonId = req.params.lessonID; 
 
   try {
     const exercises = await Exercise.find({ idLesson: lessonId });
@@ -92,4 +126,4 @@ const deleteExerciseById = async (req,res)=> {
 }
 
 module.exports = { createExercise,getRecentExercises,getExerciseByIdEx,
-  getExerciseByIdLesson,deleteExerciseById} ; 
+  getExerciseByIdLesson,deleteExerciseById,createProblemSolvEx} ; 
