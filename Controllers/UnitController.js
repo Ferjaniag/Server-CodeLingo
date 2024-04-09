@@ -3,8 +3,8 @@ const router = express.Router();
 
 const Unit = require('../Models/Unit') ;
 const Course = require('../Models/Course');
-const Lesson=require('../Models/Question' ) ; 
-const Quiz=require('../Models/Question') ;
+const Lesson=require('../Models/Questions' ) ; 
+const Quiz=require('../Models/Questions') ;
 
 // Add a new unit
 const addUnit = async (req, res) => {

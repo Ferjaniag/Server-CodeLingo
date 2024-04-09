@@ -17,6 +17,7 @@ const unit_routes = require("./Routes/UnitRoute");
 const lesson_routes = require("./Routes/LessonRoutes");
 const exercise_routes= require("./Routes/ExerciseRoutes");
 const quiz_routes= require("./Routes/QuizRoutes");
+const question_routes= require("./Routes/QuestionRoutes");
 
 app.get("/", (req, res) => {
   res.send("Hello, world!");
@@ -32,4 +33,5 @@ app.use("/", unit_routes);
 app.use('/', lesson_routes);
 app.use("/",exercise_routes) ;
 app.use("/", quiz_routes);
+app.use("/", question_routes);
 
