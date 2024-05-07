@@ -25,6 +25,42 @@ exports.get_all_courses = async (req, res) => {
   }
 };
 
+exports.get_frontend_courses = async (req, res) => {
+  try {
+    const frontendCourses = await Course.find({ category: 'FrontEnd Development' });
+    res.status(200).send(frontendCourses);
+  } catch (err) {
+    res.status(500).send({ error: err.message });
+  }
+};
+
+exports.get_backend_courses = async (req, res) => {
+  try {
+    const backendCourses = await Course.find({ category: 'BackEnd Development' });
+    res.status(200).send(backendCourses);
+  } catch (err) {
+    res.status(500).send({ error: err.message });
+  }
+};
+
+exports.get_programming_Languages_courses = async (req, res) => {
+  try {
+    const programmingLanguages = await Course.find({ category: 'Programming  Language' });
+    res.status(200).send(programmingLanguages);
+  } catch (err) {
+    res.status(500).send({ error: err.message });
+  }
+};
+
+exports.get_courses_by_category = async (req, res) => {
+  try {
+    const programmingLanguages = await Course.find({ category: req.params.category });
+    res.status(200).send(programmingLanguages);
+  } catch (err) {
+    res.status(500).send({ error: err.message });
+  }
+};
+
 exports.delete_course = async (req, res) => {
   try {
     const result = await Course.findByIdAndDelete({ _id: req.params.courseID });

@@ -64,6 +64,7 @@ const createProblemSolvEx = async (req,res)=> {
       const exercise = new Exercise({
           idLesson,
           type,
+          question,
          language,
          solution,
          
