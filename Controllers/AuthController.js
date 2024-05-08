@@ -48,35 +48,41 @@ module.exports = {
   signin: async (req, res, next) => {
     const { email, password } = req.body;
     if (!email || !password || email === '' || password === '') {
-    next(e.errorHandler(400, 'All fields are required'));
+      next(e.errorHandler(400, 'All fields are required'));
     }
     
     try {
-    const validUser = await User.findOne({ email });
-    if (!validUser) {
+      const validUser = await User.findOne({ email });
+      if (!validUser) {
         return next(e.errorHandler(404, 'User not found'));
-    }
-    const validPassword = bcrypt.compareSync(password, validUser.password);
-    if (!validPassword) {
+      }
+      const validPassword = bcrypt.compareSync(password, validUser.password);
+      if (!validPassword) {
         return next(e.errorHandler(400, 'Invalid password'));
-    }
-    const token = jwt.sign(
-        { id: validUser._id,  },
-        process.env.JWT_SECRET
-    );
-    const { password: pass, ...rest } = validUser._doc;
-    res
-    .status(200)
-    .cookie('access_token', token, {
-        httpOnly: true,
-    })
-    .json(rest);
+      }
+      
+      // Create a simple token without signing
+      // const token = { id: validUser._id };
+
+      const token = jwt.sign({_id: validUser._id}, process.env.JWT_SECRET)
+
+      const { password: pass, ...rest } = validUser._doc;
+      res
+        .status(200)
+        .cookie('access_token', token, {
+          httpOnly: true,
+        })
+        .json({
+          success: true,
+          message: 'Login successful',
+          user: rest, 
+          token: token 
+        });
     } catch (error) {
-    next(error);
+      next(error);
     }
-},
+  },
 
 
 
-  
 };
