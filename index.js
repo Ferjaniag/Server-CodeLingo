@@ -19,6 +19,7 @@ const exercise_routes= require("./Routes/ExerciseRoutes");
 const quiz_routes= require("./Routes/QuizRoutes");
 const question_routes= require("./Routes/QuestionRoutes");
 const auth_routes= require("./Routes/AuthRoutes");
+const enrollement_routes=require('./Routes/EnrollementRoutes');
 
 app.get("/", (req, res) => {
   res.send("Hello, world!");
@@ -36,4 +37,5 @@ app.use("/",exercise_routes) ;
 app.use("/", quiz_routes);
 app.use("/", question_routes);
 app.use("/", auth_routes);
+app.use("/",enrollement_routes);
 
