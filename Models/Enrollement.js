@@ -7,7 +7,7 @@ const EnrollementSchema=new mongoose.Schema({
           require:false,
     }, 
     progress :{
-       type:String,
+       type:mongoose.Types.Decimal128,
        require:false
     } , 
     idCourse : {

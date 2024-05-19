@@ -1,37 +1,69 @@
 const Enrollment = require('../Models/Enrollement');
-const Course=require('../Controllers/CourseController')
+const Course=require('../Models/Course')
 
 async function createEnrollment(req, res) {
     try {
         const { idUser, idCourse, progress } = req.body;
+
+        // Log the incoming data
+        console.log('Received data:', { idUser, idCourse, progress });
+
+        // Check if the enrollment already exists
+        const existingEnrollment = await Enrollment.findOne({ idUser, idCourse });
+
+        if (existingEnrollment) {
+            return res.status(400).send({ message: "You have already enrolled in this course" });
+        }
+
+        // Create a new enrollment if it does not exist
         const enrollment = new Enrollment({ idUser, idCourse, progress });
-        await enrollment.save();
-        res.status(201).json({message:"Successfully enrolled !", enrollment:enrollment});
+        const savedEnrollment = await enrollment.save();
+
+        res.status(201).json({ message: "Successfully enrolled!", enrollment: savedEnrollment });
     } catch (err) {
+        // Log the error
+        console.error('Error creating new enrollment:', err);
         res.status(400).json({ message: err.message });
     }
 }
 
 
+
+
 async function getCoursesByUserId(req, res) {
     try {
         const userId = req.params.userId;
+        console.log(`Fetching enrollments for user: ${userId}`);
         const enrollments = await Enrollment.find({ idUser: userId });
         
+        console.log('Enrollments:', enrollments);
+
+        if (!enrollments || enrollments.length === 0) {
+            return res.status(404).json({ message: 'No enrollments found for this user.' });
+        }
+
         const coursesData = [];
 
         for (const enrollment of enrollments) {
-            const course = await Course.get_one_course(enrollment.courseId);
+            console.log(`Fetching course for idCourse: ${enrollment.idCourse}`);
+            const course = await Course.findById(enrollment.idCourse);
             if (course) {
                 coursesData.push({
-                    courseId: course._id,
-                    courseName: course.title
+                    idEnrollment:enrollment._id,
+                    idCourse: course._id,
+                    progress:enrollment.progress.toString() ,
+                    courseName: course.title,
                 });
+            } else {
+                console.log(`Course not found for idCourse: ${enrollment.idCourse}`);
             }
         }
 
+        console.log('Courses Data:', coursesData);
+
         res.json(coursesData);
     } catch (err) {
+        console.error('Error fetching courses by user ID:', err);
         res.status(500).json({ message: err.message });
     }
 }
@@ -56,36 +88,32 @@ async function getEnrollmentsByUserId(req, res) {
     }
 }
 
-const getEnrollmentsWithCourseNames = async (req, res) => {
+async function getEnrollmentById(req, res) {
     try {
-        // Fetch all enrollments
-        const enrollments = await Enrollment.find();
+        const enrollmentId = req.params.idE;
+        const enrollment = await Enrollment.findById(enrollmentId);
 
-        // Fetch all courses
-        const courses = await Course.get_all_courses();
+        if (!enrollment) {
+            return res.status(404).json({ message: 'Enrollment not found' });
+        }
 
-        // Create a map of course IDs to course titles
-        const courseIdToTitleMap = {};
-        courses.forEach(course => {
-            courseIdToTitleMap[course._id.toString()] = course.title;
-        });
-
-        // Map enrollments to include course names
-        const enrollmentsWithCourseNames = enrollments.map(enrollment => ({
-            idEnrollment: enrollment._id.toString(),
+        const course = await Course.findById(enrollment.idCourse);
+        const enrollmentData = {
+            idEnrollment: enrollment._id,
             progress: enrollment.progress,
-            idCourse: enrollment.courseId,
-            courseTitle: enrollment.courseId ? courseIdToTitleMap[enrollment.courseId.toString()] : 'N/A'
-        }));
+            idUser: enrollment.idUser,
+            idCourse: course ? course._id : null,
+            courseName: course ? course.title : 'N/A'
+        };
 
-        return res.json(enrollmentsWithCourseNames);
-    } catch (error) {
-        console.error("Error fetching enrollments with course names:", error);
-        res.status(500).json({ error: error.message });
-        throw error;
+        res.json(enrollmentData);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
     }
 }
 
 
 
-module.exports={getEnrollmentsByUserId,deleteEnrollment,createEnrollment,getEnrollmentsWithCourseNames} ;
+
+module.exports={getEnrollmentsByUserId,deleteEnrollment,
+    createEnrollment,getCoursesByUserId, getEnrollmentById} ;
