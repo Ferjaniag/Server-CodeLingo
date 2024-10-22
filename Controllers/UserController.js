@@ -119,21 +119,35 @@ module.exports={
                     next(error);
                     }
                 },
-                // getUser : async (req, res, next) => {
-                //     try {
-                //         const user = await User.findById(req.params.userId);
-                //         if (!user) {
-                //             return next(e.errorHandler(404, 'User not found'));
-                //         }
-                //         const { password, ...rest } = user._doc;
-                //         res.status(200).json(rest);
-                //         } catch (error) {
-                //         next(error);
-                //         }
-                //     }
+                
+                getUser : async (req, res, next) => {
+                    try {
+                        const user = await User.findById(req.params.userId);
+                        if (!user) {
+                          return res.status(404).json({ message: "user not found" });
+                        }
+                    
+                        res.status(200).json(user);
+                      } catch (err) {
+                        res.status(400).json(err);
+                        console.log(err.message);
+
+                      }
+                    },
 
 
+                getUserWithBadges: async (userId) => {
+                    try {
+                        const user = await User.findById(userId).populate("badges.badgeId");
+                        return user;
+                    } catch (error) {
 
+                    console.error("Error fetching user with badges:", error);
+
+                    }
+                }
+
+                
     
     
 }

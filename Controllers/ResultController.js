@@ -1,5 +1,7 @@
 const Result = require("../Models/Result");
 const e = require("../utils/error");
+const badgeController = require("../Controllers/BadgeController");
+
 module.exports = {
 
         getAllResults: async (req, res, next) => {
@@ -56,6 +58,10 @@ module.exports = {
                     resultStatus
                 });
                 const savedResult = await newResult.save();
+                // Check if the result status is 'Success' to award a badge
+                if (resultStatus === "Success") {
+                    await badgeController.awardBadge(userId, quizId); // Award the badge
+                }
                 res.status(201).json(savedResult);
             } catch (error) {
                 next(error);
@@ -86,6 +92,9 @@ module.exports = {
                     },
                     { new: true }
                 );
+                if (resultStatus === "Success") {
+                    await badgeController.awardBadge(userId, quizId); // Award the badge
+                }
         
                 res.status(200).json(updatedResult);
             } catch (error) {
