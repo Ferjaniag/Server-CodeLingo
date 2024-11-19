@@ -3,10 +3,23 @@ const Course=require('../Models/Course')
 
 async function createEnrollment(req, res) {
     try {
-        const { idUser, idCourse, progress } = req.body;
 
+
+
+        const { idUser, idCourse, units } = req.body;
+        const progress = units.map(unit => ({
+            unitId: unit._id,
+            unitCompleted: false,
+            lessons: unit.lessons.map(lessonId => ({
+              lessonId: lessonId,
+              completed: false,
+              percentage: 0,
+              lastAccessed: new Date()
+            }))
+          }));
+        
         // Log the incoming data
-        console.log('Received data:', { idUser, idCourse, progress });
+      //  console.log('Received data:', { idUser, idCourse });
 
         // Check if the enrollment already exists
         const existingEnrollment = await Enrollment.findOne({ idUser, idCourse });
@@ -16,7 +29,7 @@ async function createEnrollment(req, res) {
         }
 
         // Create a new enrollment if it does not exist
-        const enrollment = new Enrollment({ idUser, idCourse, progress });
+        const enrollment = new Enrollment({ idUser, idCourse, progress});
         const savedEnrollment = await enrollment.save();
 
         res.status(201).json({ message: "Successfully enrolled!", enrollment: savedEnrollment });
@@ -27,6 +40,68 @@ async function createEnrollment(req, res) {
     }
 }
 
+
+async function handleProgressEnrollement(req,res) {
+    
+
+    const { userId, courseId, unitId, lessonId, percentage } = req.body;
+
+    try {
+      // Find the user's enrollment for the course
+      const enrollment = await Enrollment.findOne({ userId, courseId });
+  
+      if (enrollment) {
+        // Find the specific unit progress
+        const unitProgress = enrollment.progress.find(p => p.unitId.toString() === unitId);
+  
+        if (unitProgress) {
+          // Find the specific lesson progress within the unit
+          const lessonProgress = unitProgress.lessons.find(l => l.lessonId.toString() === lessonId);
+  
+          if (lessonProgress) {
+            // Update the progress for the lesson
+            lessonProgress.percentage = percentage;
+            lessonProgress.completed = percentage === 100;
+            lessonProgress.lastAccessed = new Date();
+          } else {
+            // If the lesson progress doesn't exist, add it
+            unitProgress.lessons.push({
+              lessonId,
+              percentage,
+              completed: percentage === 100,
+              lastAccessed: new Date(),
+            });
+          }
+  
+          // Check if all lessons in the unit are completed
+          const allLessonsCompleted = unitProgress.lessons.every(l => l.completed === true);
+          unitProgress.unitCompleted = allLessonsCompleted;
+  
+          await enrollment.save();
+          res.status(200).json({ message: 'Progress updated successfully', enrollment });
+        } else {
+          // If the unit progress doesn't exist, add it with the lesson
+          enrollment.progress.push({
+            unitId,
+            lessons: [{
+              lessonId,
+              percentage,
+              completed: percentage === 100,
+              lastAccessed: new Date(),
+            }],
+            unitCompleted: percentage === 100, // Only mark unit completed if lesson is 100%
+          });
+  
+          await enrollment.save();
+          res.status(200).json({ message: 'Progress updated successfully', enrollment });
+        }
+      } else {
+        res.status(404).json({ message: 'Enrollment not found' });
+      }
+    } catch (err) {
+      res.status(500).json({ message: 'Server error', err });
+    }
+}
 
 
 
@@ -51,7 +126,7 @@ async function getCoursesByUserId(req, res) {
                 coursesData.push({
                     idEnrollment:enrollment._id,
                     idCourse: course._id,
-                    progress:enrollment.progress.toString() ,
+                    overalProgress:enrollment.overallProgress ,
                     courseName: course.title,
                 });
             } else {
@@ -112,8 +187,96 @@ async function getEnrollmentById(req, res) {
     }
 }
 
+async function getEnrollmentByIdCourse(req, res) {
+  try {
+      const courseId = req.params.idC;
+      const enrollment = await Enrollment.find({idCourse: courseId});
+
+      if (!enrollment) {
+          return res.status(404).json({ message: 'Enrollment not found' });
+      }
+      console.log('teeest1', enrollment)
+      const course = await Course.findById(courseId);
+      const enrollmentData = {
+          idEnrollment: enrollment._id,
+          progress: enrollment.progress,
+          idUser: enrollment.idUser,
+          idCourse: course ? course._id : null,
+          courseName: course ? course.title : 'N/A'
+      };
+      console.log('teeest', enrollmentData)
+   //   res.json(enrollmentData);
+   res.json(enrollment);
+  } catch (err) {
+      res.status(500).json({ message: err.message });
+  }
+}
+
+
+const updateUnitAndCourseProgress = async (enrollment) => {
+    let totalPercentage = 0;
+    let totalUnits = enrollment.progress.length;
+  
+    // Iterate through units to calculate unit completion and track course progress
+    enrollment.progress.forEach(unit => {
+      const totalLessons = unit.lessons.length;
+      const completedLessons = unit.lessons.filter(l => l.completed).length;
+  
+      // Mark unit as completed if all lessons are completed
+      unit.unitCompleted = completedLessons === totalLessons;
+  
+      // Calculate unit's percentage (average of lesson percentages)
+      const unitPercentage = unit.lessons.reduce((acc, lesson) => acc + lesson.percentage, 0) / totalLessons;
+    
+      unit.percentage = unitPercentage;
+      totalPercentage += unitPercentage;
+    });
+  
+    // Update overall course progress as the average progress across all units
+    enrollment.overallProgress = totalPercentage / totalUnits;
+  
+    // Save the enrollment document
+    await enrollment.save();
+  };
+  
+
+
+
+
+const updateLessonProgress = async (req, res) => {
+    try {
+      const { userId, courseId, unitId, lessonId, percentage } = req.body;
+  
+      const enrollment = await Enrollment.findOne({ idUser: userId, idCourse: courseId });
+      if (!enrollment) return res.status(404).json({ message: 'Enrollment not found' });
+  
+      // Find the relevant unit and lesson
+      const unit = enrollment.progress.find(u => u.unitId.equals(unitId));
+      if (!unit) return res.status(404).json({ message: 'Unit not found' });
+  
+      const lesson = unit.lessons.find(l => l.lessonId.equals(lessonId));
+      if (!lesson) return res.status(404).json({ message: 'Lesson not found' });
+  
+      // Update lesson progress
+      lesson.percentage = percentage;
+      lesson.lastAccessed = new Date();
+      lesson.completed = percentage >= 100;
+  
+      // Save the document
+      await enrollment.save();
+  
+      // Update unit and course progress
+      await updateUnitAndCourseProgress(enrollment);
+  
+      res.json({ message: 'Lesson progress updated', enrollment });
+    } catch (error) {
+      res.status(500).json({ message: 'Error updating lesson progress', error });
+    }
+  };
+  
 
 
 
 module.exports={getEnrollmentsByUserId,deleteEnrollment,
-    createEnrollment,getCoursesByUserId, getEnrollmentById} ;
+    createEnrollment,getCoursesByUserId, getEnrollmentById, handleProgressEnrollement, updateLessonProgress,
+  getEnrollmentByIdCourse} ;
