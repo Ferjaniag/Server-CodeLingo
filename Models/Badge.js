@@ -10,6 +10,10 @@ const BadgeSchema = new mongoose.Schema({
     ref: "Quiz",
     required: true,
 },
+dateAwarded:{
+  type: Date,
+  default: Date.now,
+}
 
 });
 
