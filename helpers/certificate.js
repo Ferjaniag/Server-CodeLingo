@@ -1,62 +1,4 @@
-const express = require("express");
-const app = express();
-const bodyParser = require("body-parser");
-const cors = require("cors"); // hope it works now
-const nodemailer = require("nodemailer");
-const multer = require("multer");
-const path = require("path");
-//const generateContentCertificate = require("./helpers/certificate").default;
-const puppeteer = require("puppeteer");
-//const streamifier = require("streamifier");
-
-require("dotenv").config();
-require("./config/mongoose");
-app.use(bodyParser.json());
-app.use(cors());
-app.use(express.json());
-
-// Upload certificate
-// Configure Multer storage
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/"); // Directory to save files
-  },
-  filename: (req, file, cb) => {
-    // Save the file with the original name and extension
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    const ext = path.extname(file.originalname); // Get the original file extension
-    cb(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
-  },
-});
-
-// Initialize Multer with the storage configuration
-const upload = multer({
-  storage: storage,
-  fileFilter: (req, file, cb) => {
-    // Validate file type (accept only images)
-    if (
-      file.mimetype === "image/png" ||
-      file.mimetype === "image/jpeg" ||
-      file.mimetype === "image/jpg"
-    ) {
-      cb(null, true);
-    } else {
-      cb(new Error("Only image files are allowed!"), false);
-    }
-  },
-});
-
-app.post("/upload&notify", upload.single("certificate"), (req, res) => {
-  console.log("File uploaded:", req.file);
-  // File path for the uploaded file
-  const filePath = path.resolve(req.file.path);
-  console.log("file path", filePath);
-
-  const { reciever, course } = req.body;
-
-  sendCertificateEmail(reciever, course, filePath);
-  res.json({ message: "Upload successful", file: req.file });
-});
+// const puppeteer = require("puppeteer");
 
 const generateContentCertificate = (user, course, date) => {
   return ` <html>
@@ -100,10 +42,8 @@ const generateContentCertificate = (user, course, date) => {
 }
 
 body {
- 
- padding: 20px 0;
+  padding: 20px 0;
   background: #ccc;
- 
 }
 
 .pm-certificate-container {
@@ -115,8 +55,21 @@ body {
   color: #333;
   font-family: 'Open Sans', sans-serif;
   box-shadow: 0 0 5px rgba(0, 0, 0, .5);
+  /*background: -webkit-repeating-linear-gradient(
+    45deg,
+    #618597,
+    #618597 1px,
+    #b2cad6 1px,
+    #b2cad6 2px
+  );
+  background: repeating-linear-gradient(
+    90deg,
+    #618597,
+    #618597 1px,
+    #b2cad6 1px,
+    #b2cad6 2px
+  );*/
   
-
   .outer-border {
     width: 794px;
     height: 594px;
@@ -125,7 +78,7 @@ body {
     margin-left: -397px;
     top: 50%;
     margin-top:-297px;
-    border: 2px solid #35E9BC;
+    border: 2px solid #fff;
   }
   
   .inner-border {
@@ -136,7 +89,7 @@ body {
     margin-left: -365px;
     top: 50%;
     margin-top:-265px;
-    border: 2px solid #35E9BC;
+    border: 2px solid #fff;
   }
 
   .pm-certificate-border {
@@ -154,7 +107,7 @@ body {
 
     .pm-certificate-block {
       width: 650px;
-      height: 150px;
+      height: 200px;
       position: relative;
       left: 50%;
       margin-left: -325px;
@@ -179,26 +132,26 @@ body {
       padding: 20px;
 
       .pm-name-text {
-        font-size: 25px;
+        font-size: 20px;
       }
     }
 
     .pm-earned {
       margin: 15px 0 20px;
       .pm-earned-text {
-        font-size: 25px;
+        font-size: 20px;
       }
       .pm-credits-text {
-        font-size: 25px;
+        font-size: 15px;
       }
     }
 
     .pm-course-title {
       .pm-earned-text {
-        font-size: 25px;
+        font-size: 20px;
       }
       .pm-credits-text {
-        font-size: 25px;
+        font-size: 15px;
       }
     }
 
@@ -216,7 +169,7 @@ body {
       position: relative;
       left: 50%;
       margin-left: -325px;
-      bottom: -150px;
+      bottom: -105px;
     }
   }
 }
@@ -290,9 +243,9 @@ body {
                 </div>
                 <div class="col-xs-4 pm-certified col-xs-4 text-center">
                   <span class="pm-credits-text block sans">Date Completed</span>
-                 
+                  <span class="pm-empty-space block underline"></span>
                   <span class="bold block">${date} </span>
-                
+                  <span class="bold block"> <--codelinguo--> </span>
                 </div>
             </div>
           </div>
@@ -305,7 +258,7 @@ body {
 </body>
     </html>`;
 };
-
+/*
 async function htmlToImage(user, course, date) {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
@@ -315,106 +268,12 @@ async function htmlToImage(user, course, date) {
   await page.setContent(htmlContent);
 
   // Convert the content to PNG
-  const buffer = await page.screenshot({ type: "png", fullPage: true });
-  // Force the content to be a Buffer if it's not
-  const pngBuffer = Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer);
+  const buffer = await page.screenshot({ type: "png" });
 
   await browser.close();
-  console.log("TYPE PNGBUFFER ", pngBuffer instanceof Buffer);
-  return pngBuffer;
+  return buffer;
 }
-
-app.post("/notify", async (req, res) => {
-  console.log("body", req.body);
-  const { reciever, course, date, name } = req.body;
-  let imageBuffer = await htmlToImage(name, course, date);
-  console.log("image buffer before ", imageBuffer instanceof Buffer);
-  sendCertificateEmail(reciever, course, imageBuffer);
-  res.json({ message: "Notified successful", file: req.file });
-});
-
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false, // true for port 465, false for other ports
-  auth: {
-    user: process.env.GMAIL_ACCOUNT,
-    pass: process.env.GMAIL_PASSWORD,
-  },
-});
-
-// Fonction pour envoyer une notification
-const sendCertificateEmail = async (reciever, course, filePath) => {
-  console.log("buffer ::", filePath instanceof Buffer);
-  try {
-    const mailOptions = {
-      from: "ferjeniag@gmail.com",
-      to: reciever,
-      subject: `Your Completion Certificate for ${course} course`,
-      html: `
-        <h1>Congratulations!</h1>
-        <p>You've completed your course. Your certificate is attached.</p>
-      `,
-      attachments: [
-        {
-          filename: "certificate.png", // The name shown in the email
-          content: filePath, // Relative or absolute path to the file
-        },
-      ],
-    };
-
-    await transporter.sendMail(mailOptions);
-    console.log("E-mail envoyé avec succès !");
-  } catch (error) {
-    console.error("Erreur lors de l'envoi de l'e-mail : ", error);
-  }
-};
-
-/* Endpoint pour notifier un utilisateur
-app.post("/notify", async (req, res) => {
-  const { userId, courseId } = req.body;
-
-  try {
-    await sendCertificateEmail(userId, courseId);
-    res.status(200).json({ message: "Notification envoyée avec succès !" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Erreur serveur." });
-  }
-});
 
 */
 
-// routes
-const course_routes = require("./Routes/CourseRoutes");
-const unit_routes = require("./Routes/UnitRoute");
-const lesson_routes = require("./Routes/LessonRoutes");
-const exercise_routes = require("./Routes/ExerciseRoutes");
-const quiz_routes = require("./Routes/QuizRoutes");
-const question_routes = require("./Routes/QuestionRoutes");
-const auth_routes = require("./Routes/AuthRoutes");
-const enrollement_routes = require("./Routes/EnrollementRoutes");
-const result_routes = require("./Routes/ResultRoutes");
-const badge_routes = require("./Routes/BadgeRoutes");
-const user_routes = require("./Routes/UserRoutes");
-
-app.get("/", (req, res) => {
-  res.send("Hello, world!");
-});
-
-app.listen(process.env.PORT, () => {
-  console.log("App is listening on port", process.env.PORT);
-});
-
-//app use
-app.use("/", course_routes);
-app.use("/", unit_routes);
-app.use("/", lesson_routes);
-app.use("/", exercise_routes);
-app.use("/", quiz_routes);
-app.use("/", question_routes);
-app.use("/", auth_routes);
-app.use("/", enrollement_routes);
-app.use("/", result_routes);
-app.use("/", badge_routes);
-app.use("/", user_routes);
+export default { generateContentCertificate };
