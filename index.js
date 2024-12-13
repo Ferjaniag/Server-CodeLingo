@@ -8,7 +8,6 @@ const path = require("path");
 
 const puppeteer = require("puppeteer");
 
-
 require("dotenv").config();
 require("./config/mongoose");
 app.use(bodyParser.json());
@@ -370,7 +369,6 @@ const sendCertificateEmail = async (reciever, course, filePath) => {
   }
 };
 
-
 // routes
 const course_routes = require("./Routes/CourseRoutes");
 const unit_routes = require("./Routes/UnitRoute");
@@ -383,6 +381,7 @@ const enrollement_routes = require("./Routes/EnrollementRoutes");
 const result_routes = require("./Routes/ResultRoutes");
 const badge_routes = require("./Routes/BadgeRoutes");
 const user_routes = require("./Routes/UserRoutes");
+const req = require("express/lib/request");
 
 app.get("/", (req, res) => {
   res.send("Hello, world!");
@@ -393,6 +392,9 @@ app.listen(process.env.PORT, () => {
 });
 
 //app use
+app.use("/hello", (req, res) => {
+  res.json({ msg: "Hello it works !!!" });
+});
 app.use("/", course_routes);
 app.use("/", unit_routes);
 app.use("/", lesson_routes);
