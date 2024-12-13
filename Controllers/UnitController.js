@@ -1,150 +1,137 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 
-const Unit = require('../Models/Unit') ;
-const Course = require('../Models/Course');
-const Lesson=require('../Models/Questions' ) ; 
-const Quiz=require('../Models/Questions') ;
+const Unit = require("../Models/Unit");
+const Course = require("../Models/Course");
+const Lesson = require("../Models/Questions");
+const Quiz = require("../Models/Questions");
 
 // Add a new unit
 const addUnit = async (req, res) => {
-    try {
-      const { idCourse, title } = req.body;
-      const unit = new Unit({ idCourse, title });
-      const savedUnit = await unit.save();
-      res.json(savedUnit);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  };
+  try {
+    const { idCourse, title } = req.body;
+    const unit = new Unit({ idCourse, title });
+    const savedUnit = await unit.save();
+    res.json(savedUnit);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
-
-  // Get Unit By ID 
+// Get Unit By ID
 
 const getUnitById = async (req, res) => {
-  
-  try  {
-    const unit=await Unit.findById(req.params.unitId);
-    res.status(200).json(unit) ; 
-
-  } catch(error){
-
+  try {
+    const unit = await Unit.findById(req.params.unitId);
+    res.status(200).json(unit);
+  } catch (error) {
     res.status(500).json({ error: error.message });
-
   }
-}
+};
 
-
-
-  
-  // Delete a unit
-  const deleteUnit = async (req, res) => {
-    try {
-      const deletedUnit = await Unit.findByIdAndDelete(req.params.unitId);
-      res.json(deletedUnit);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  };
-  
-  // Update a unit
-  const updateUnit = async (req, res) => {
-    try {
-      const { idCourse, title } = req.body;
-      const updatedUnit = await Unit.findByIdAndUpdate(
-        req.params.unitId,
-        { idCourse, title },
-        { new: true }
-      );
-      res.json(updatedUnit);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  };
-  
-  // Add a lesson to a unit
-  const addLessonToUnit = async (req, res) => {
-    try {
-      const unit = await Unit.findById(req.params.unitId);
-      const lesson = new Lesson(req.body);
-      unit.lessons.push(lesson);
-      await unit.save();
-      res.json(unit);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  };
-  
-  // Add a quiz to a unit
-  const addQuizToUnit = async (req, res) => {
-    try {
-      const unit = await Unit.findById(req.params.unitId);
-      const quiz = new Quiz(req.body);
-      unit.quizId = quiz._id;
-      await unit.save();
-      res.json(unit);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  };
-  
-
-
-  const getUnitsWithCourseNames=async (req,res)=> {
-    try {
-      // Fetch all units
-      const units = await Unit.find();
-  
-      // Fetch all courses
-      const courses = await Course.find();
-  
-      // Create a map of course IDs to course titles
-      const courseIdToTitleMap = {};
-      courses.forEach(course => {
-        courseIdToTitleMap[course._id.toString()] = course.title;
-      });
-  
-      // Map units to include course names
-      const unitsWithCourseNames = units.map(unit => ({
-        idUnit:unit._id.toString(),
-        unitTitle: unit.title,
-        nbLessons : unit.lessons.length,
-        idCourse: unit.idCourse,
-        courseTitle: unit.idCourse ? courseIdToTitleMap[unit.idCourse.toString()] : 'N/A'
-      }));
-  
-      return res.json(unitsWithCourseNames);
-    } catch (error) {
-      console.error("Error fetching units with course names:", error);
-      res.status(500).json({ error: error.message });
-      throw error;
-    }
+// Delete a unit
+const deleteUnit = async (req, res) => {
+  try {
+    const deletedUnit = await Unit.findByIdAndDelete(req.params.unitId);
+    res.json(deletedUnit);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
-  
+};
 
-  const getUnitsWithIdCourse = async (req,res)=> {
-    try {
-      const courseId = req.params.courseID;
-      // Query the database to find units by course ID
-      const units = await Unit.find({ idCourse: courseId }) ;
-      res.status(200).json(units); // Send units as JSON response
-    } catch (error) {
-      console.error('Error fetching units by course ID:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
+// Update a unit
+const updateUnit = async (req, res) => {
+  try {
+    const { idCourse, title } = req.body;
+    const updatedUnit = await Unit.findByIdAndUpdate(
+      req.params.unitId,
+      { idCourse, title },
+      { new: true }
+    );
+    res.json(updatedUnit);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
+};
 
+// Add a lesson to a unit
+const addLessonToUnit = async (req, res) => {
+  try {
+    const unit = await Unit.findById(req.params.unitId);
+    const lesson = new Lesson(req.body);
+    unit.lessons.push(lesson);
+    await unit.save();
+    res.json(unit);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
+// Add a quiz to a unit
+const addQuizToUnit = async (req, res) => {
+  try {
+    const unit = await Unit.findById(req.params.unitId);
+    const quiz = new Quiz(req.body);
+    unit.quizId = quiz._id;
+    await unit.save();
+    res.json(unit);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
+const getUnitsWithCourseNames = async (req, res) => {
+  try {
+    // Fetch all units
+    const units = await Unit.find();
 
+    // Fetch all courses
+    const courses = await Course.find();
 
-  module.exports = {
-    addUnit,
-    deleteUnit,
-    updateUnit,
-    addLessonToUnit,
-    addQuizToUnit,
-    getUnitsWithCourseNames,
-    getUnitsWithIdCourse,
-    getUnitById
-  };
+    // Create a map of course IDs to course titles
+    const courseIdToTitleMap = {};
+    courses.forEach((course) => {
+      courseIdToTitleMap[course._id.toString()] = course.title;
+    });
+
+    // Map units to include course names
+    const unitsWithCourseNames = units.map((unit) => ({
+      idUnit: unit._id.toString(),
+      unitTitle: unit.title,
+      nbLessons: unit.lessons.length,
+      idCourse: unit.idCourse,
+      courseTitle: unit.idCourse
+        ? courseIdToTitleMap[unit.idCourse.toString()]
+        : "N/A",
+    }));
+
+    return res.json(unitsWithCourseNames);
+  } catch (error) {
+    console.error("Error fetching units with course names:", error);
+    res.status(500).json({ error: error.message });
+    throw error;
+  }
+};
+
+const getUnitsWithIdCourse = async (req, res) => {
+  try {
+    const courseId = req.params.courseID;
+
+    const units = await Unit.find({ idCourse: courseId });
+    res.status(200).json(units); // Send units as JSON response
+  } catch (error) {
+    console.error("Error fetching units by course ID:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+module.exports = {
+  addUnit,
+  deleteUnit,
+  updateUnit,
+  addLessonToUnit,
+  addQuizToUnit,
+  getUnitsWithCourseNames,
+  getUnitsWithIdCourse,
+  getUnitById,
+};

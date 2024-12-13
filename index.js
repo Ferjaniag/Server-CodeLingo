@@ -5,9 +5,9 @@ const cors = require("cors"); // hope it works now
 const nodemailer = require("nodemailer");
 const multer = require("multer");
 const path = require("path");
-//const generateContentCertificate = require("./helpers/certificate").default;
+
 const puppeteer = require("puppeteer");
-//const streamifier = require("streamifier");
+
 
 require("dotenv").config();
 require("./config/mongoose");
@@ -370,20 +370,6 @@ const sendCertificateEmail = async (reciever, course, filePath) => {
   }
 };
 
-/* Endpoint pour notifier un utilisateur
-app.post("/notify", async (req, res) => {
-  const { userId, courseId } = req.body;
-
-  try {
-    await sendCertificateEmail(userId, courseId);
-    res.status(200).json({ message: "Notification envoyée avec succès !" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Erreur serveur." });
-  }
-});
-
-*/
 
 // routes
 const course_routes = require("./Routes/CourseRoutes");

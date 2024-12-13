@@ -1,7 +1,6 @@
-const quizController = require("../Controllers/QuizController");
 const Router = require("express");
 const router = Router();
-
+const quizController = require("../Controllers/QuizController");
 
 router.post("/addQuiz", quizController.add_quiz);
 router.get("/getAllQuizzes", quizController.get_all_quizzes);
@@ -12,5 +11,3 @@ router.delete("/delete_quiz/:quizID", quizController.delete_Quiz);
 router.patch("/update_quiz/:quizID", quizController.update_quiz);
 
 module.exports = router;
-
-

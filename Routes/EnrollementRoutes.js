@@ -1,11 +1,12 @@
+const express = require("express");
+const router = express.Router();
+
 const EnrollementController = require("../Controllers/EnrollementController");
 
-const Router = require("express");
-const router = Router();
-
 router.post("/enrollment_student", EnrollementController.createEnrollment);
-// Get Courses where a Student Enrolled In
+
 router.get("/enrollments/:userId", EnrollementController.getCoursesByUserId);
+
 router.delete(
   "/enrollment/:enrollmentId",
   EnrollementController.deleteEnrollment
