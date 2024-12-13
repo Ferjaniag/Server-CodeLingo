@@ -387,8 +387,8 @@ app.get("/", (req, res) => {
   res.send("Hello, world!");
 });
 
-app.listen(process.env.PORT, () => {
-  console.log("App is listening on port", process.env.PORT);
+app.listen(process.env.PORT || 5002, () => {
+  console.log("App is listening on port", process.env.PORT || 5002);
 });
 
 //app use
