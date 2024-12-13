@@ -1,6 +1,7 @@
-const mongoose = require('mongoose')
-const dbName=process.env.DBName
+const mongoose = require("mongoose");
+const dbName = process.env.DB_URL;
 
-mongoose.connect(`mongodb://127.0.0.1/${dbName}`)
-    .then(()=>console.log( `connected to database ${dbName}`))
-    .catch(err => console.log(err))
+mongoose
+  .connect(dbName)
+  .then(() => console.log(`connected to database `))
+  .catch((err) => console.log(err));

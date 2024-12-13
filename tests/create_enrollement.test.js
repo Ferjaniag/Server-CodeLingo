@@ -19,7 +19,6 @@ describe("POST /enrollment_student", () => {
   });
 
   it("should create a new enrollment and return 201", async () => {
-    // Mocking the `findOne` and `save` methods of the Enrollment model
     Enrollment.findOne.mockResolvedValue(null);
     Enrollment.prototype.save.mockResolvedValue({
       idUser: "123",
