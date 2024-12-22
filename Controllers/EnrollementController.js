@@ -121,7 +121,7 @@ async function getCoursesByUserId(req, res) {
 
     console.log("Enrollments:", enrollments);
 
-    if (!enrollments || enrollments.length === 0) {
+    if (!enrollments) {
       return res
         .status(404)
         .json({ message: "No enrollments found for this user." });
