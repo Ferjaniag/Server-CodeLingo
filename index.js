@@ -334,8 +334,8 @@ app.post("/notify", async (req, res) => {
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
-  port: 587,
-  secure: false, // true for port 465, false for other ports
+  port: 465,
+  secure: true, // true for port 465, false for other ports
   auth: {
     user: process.env.GMAIL_ACCOUNT,
     pass: process.env.GMAIL_PASSWORD,
