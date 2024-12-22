@@ -60,7 +60,7 @@ module.exports = {
                 const savedResult = await newResult.save();
                 // Check if the result status is 'Success' to award a badge
                 if (resultStatus === "Success") {
-                    await badgeController.awardBadge(userId, quizId); // Award the badge
+                    await badgeController.awardBadge(userId, quizId); 
                 }
                 res.status(201).json(savedResult);
             } catch (error) {

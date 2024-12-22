@@ -73,7 +73,7 @@ module.exports.update_quiz = async (req, res) => {
 //! get one quiz's details
 module.exports.get_one_quiz = async (req, res) => {
   try {
-    const quiz = await Quiz.findById(req.params.quizID);
+    const quiz = await Quiz.findById(req.params.quizID).lean();
     if (!quiz) {
       return res.status(404).json({ message: "quiz not found" });
     }

@@ -1,4 +1,5 @@
-const Question = require('../Models/Questions');
+const Question = require("../Models/Questions");
+const Quiz = require("../Models/Quiz");
 
 module.exports = {
   addQuestion: async (req, res, next) => {
@@ -14,7 +15,6 @@ module.exports = {
         return next(e.errorHandler(400, "Please provide all required fields"));
       }
 
-    
       if (!options.includes(correctOption)) {
         return next(
           e.errorHandler(
@@ -41,7 +41,14 @@ module.exports = {
   getAllQuestions: async (req, res, next) => {
     const { quizId } = req.params;
     try {
+      // Check if the quiz exists
+      const quiz = await Quiz.findById(quizId);
+      if (!quiz) {
+        return res.status(404).json({ message: "Quiz not found" });
+      }
+
       const questions = await Question.find({ quizId });
+
       res.status(200).json(questions);
     } catch (error) {
       next(error);
