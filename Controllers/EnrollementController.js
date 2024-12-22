@@ -224,22 +224,45 @@ const updateUnitAndCourseProgress = async (enrollment) => {
   // Iterate through units to calculate unit completion and track course progress
   enrollment.progress.forEach((unit) => {
     const totalLessons = unit.lessons.length;
-    const completedLessons = unit.lessons.filter((l) => l.completed).length;
 
-    // Mark unit as completed if all lessons are completed
-    unit.unitCompleted = completedLessons === totalLessons;
+    // Handle empty lessons array
+    if (totalLessons === 0) {
+      unit.percentage = 0; // Set to 0 if no lessons are present
+      unit.unitCompleted = true; // Mark as completed if no lessons
+    } else {
+      const completedLessons = unit.lessons.filter((l) => l.completed).length;
 
-    // Calculate unit's percentage (average of lesson percentages)
-    const unitPercentage =
-      unit.lessons.reduce((acc, lesson) => acc + lesson.percentage, 0) /
-      totalLessons;
+      // Mark unit as completed if all lessons are completed
+      unit.unitCompleted = completedLessons === totalLessons;
 
-    unit.percentage = unitPercentage;
-    totalPercentage += unitPercentage;
+      // Calculate unit's percentage (average of lesson percentages)
+      const unitPercentage =
+        unit.lessons.reduce(
+          (acc, lesson) =>
+            acc + (isNaN(lesson.percentage) ? 0 : lesson.percentage),
+          0
+        ) / totalLessons;
+
+      console.log("unitPercentage:", unitPercentage);
+      if (isNaN(unitPercentage)) {
+        console.log("Error: unitPercentage is NaN");
+        unit.percentage = 0; // Default to 0 if NaN
+      } else {
+        unit.percentage = unitPercentage;
+      }
+
+      totalPercentage += unit.percentage;
+    }
   });
 
   // Update overall course progress as the average progress across all units
-  enrollment.overallProgress = totalPercentage / totalUnits;
+  if (isNaN(totalPercentage) || totalUnits === 0) {
+    enrollment.overallProgress = 0; // Default to 0 if there's an issue
+  } else {
+    enrollment.overallProgress = totalPercentage / totalUnits;
+  }
+
+  console.log("Overall progress:", enrollment.overallProgress);
 
   // Save the enrollment document
   await enrollment.save();
@@ -249,6 +272,7 @@ const updateLessonProgress = async (req, res) => {
   try {
     const { userId, courseId, unitId, lessonId, percentage } = req.body;
 
+    console.log("type of percentage ", typeof percentage);
     const enrollment = await Enrollment.findOne({
       idUser: userId,
       idCourse: courseId,
